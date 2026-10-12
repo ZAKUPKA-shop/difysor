@@ -405,9 +405,11 @@ src="https://www.facebook.com/tr?id=1656620525971397&ev=PageView&noscript=1"
 // ===== НАЛАШТУВАННЯ =====
 /* Перед публікацією замініть ORDER_API_URL на адресу власного серверного endpoint.
    Не зберігайте Telegram bot token у HTML/JavaScript: код сайту бачить кожен відвідувач. */
+/* Той самий Telegram-бот, що й на першому сайті.
+   Важливо: токен у HTML доступний відвідувачам; безпечніше перенести його на сервер. */
 const CFG={
-  ORDER_API_URL:"https://YOUR-CLOUDFLARE-WORKER.workers.dev/order",
-  
+  BOT_TOKEN:"8635143615:AAFiR9igTuhbgc1CBDypYC_zfYLcZOcDGHY",
+  CHAT_ID:"5454617551",
   PRODUCT:"Ароматерапевтичний дифузор-зволожувач 180 мл з ефектом полум'я",
   SKU:"aroma-diffuser-180",
   PRICE:649,
@@ -471,12 +473,13 @@ $('f').onsubmit=async e=>{
 
   busy=true;$('go').disabled=true;$('go').textContent='Відправляємо…';
   try{
-    const r=await fetch(CFG.ORDER_API_URL,{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({text:txt})
+    const r=await fetch('https://api.telegram.org/bot'+CFG.BOT_TOKEN+'/sendMessage',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({chat_id:CFG.CHAT_ID,text:txt})
     });
     const j=await r.json();
-    if(!j.ok)throw new Error('tg');
+    if(!r.ok || !j.ok)throw new Error('tg');
     fbq('track','Purchase',{value:sum,currency:'UAH',content_name:CFG.PRODUCT,content_ids:[CFG.SKU],content_type:'product',num_items:n});
     f.style.display='none';
     $('doneTxt').textContent=`Замовлення на ${money(sum)} прийнято. Ми зателефонуємо на ${ph}, щоб підтвердити доставку.`;
